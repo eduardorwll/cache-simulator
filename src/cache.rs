@@ -2,12 +2,14 @@ use core::str;
 use std::path::PathBuf;
 
 #[derive(Copy, Clone, Debug)]
+/// Struct da configuração de UMA cache (l1, l2 etc)
 pub struct Cache {
     nsets: usize,
     bsize: usize,
     assoc: usize,
 }
 
+/// Struct das configurações do simulador de cache
 pub struct SimConfig {
     dl1: Cache,
     il1: Cache,
@@ -15,6 +17,7 @@ pub struct SimConfig {
     file: PathBuf,
 }
 
+/// Implementação de metodos básicos de uma struct
 impl SimConfig {
     pub fn new(dl1: Cache, il1: Cache, l2: Option<Cache>, file: PathBuf) -> Self {
         Self { dl1, il1, l2, file }
@@ -35,6 +38,8 @@ impl SimConfig {
     }
 }
 
+/// Implementação da trait FromStr para que seja feito o parsing de `<nsets>:<bsize>:<assoc>` para a
+/// struct Cache
 impl std::str::FromStr for Cache {
     type Err = String;
 
@@ -59,6 +64,7 @@ impl std::str::FromStr for Cache {
     }
 }
 
+/// Implementação de metodos básicos de uma struct
 impl Cache {
     pub fn new(nsets: usize, bsize: usize, assoc: usize) -> Self {
         Self {
