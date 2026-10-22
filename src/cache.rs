@@ -1,88 +1,52 @@
-use core::str;
-use std::path::PathBuf;
+use crate::address::{Address, DecodedAddress};
 
-#[derive(Copy, Clone, Debug)]
-/// Struct da configuração de UMA cache (l1, l2 etc)
+use self::{cache_config::CacheConfig, cache_line::CacheLine};
+use rand::RngExt;
+
+pub mod cache_config;
+mod cache_line;
+
 pub struct Cache {
-    nsets: usize,
-    bsize: usize,
-    assoc: usize,
+    pub config: CacheConfig,
+    pub sets: Vec<Vec<CacheLine>>,
 }
 
-/// Struct das configurações do simulador de cache
-pub struct SimConfig {
-    dl1: Cache,
-    il1: Cache,
-    l2: Option<Cache>,
-    file: PathBuf,
-}
-
-/// Implementação de metodos básicos de uma struct
-impl SimConfig {
-    pub fn new(dl1: Cache, il1: Cache, l2: Option<Cache>, file: PathBuf) -> Self {
-        Self { dl1, il1, l2, file }
-    }
-
-    pub fn dl1(&self) -> Cache {
-        self.dl1
-    }
-    pub fn il1(&self) -> Cache {
-        self.il1
-    }
-    pub fn l2(&self) -> Option<Cache> {
-        self.l2
-    }
-
-    pub fn file(&self) -> &PathBuf {
-        &self.file
-    }
-}
-
-/// Implementação da trait FromStr para que seja feito o parsing de `<nsets>:<bsize>:<assoc>` para a
-/// struct Cache
-impl std::str::FromStr for Cache {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let invalid = || {
-            format!(
-                "config de cache inválida: `{s}` (esperado <nsets>:<bsize>:<assoc>, ex.: 1024:16:4)"
-            )
-        };
-
-        let parts: Vec<&str> = s.split(":").collect();
-
-        if parts.len() != 3 {
-            return Err(invalid());
-        }
-
-        Ok(Self {
-            nsets: parts[0].parse().map_err(|_| invalid())?,
-            bsize: parts[1].parse().map_err(|_| invalid())?,
-            assoc: parts[2].parse().map_err(|_| invalid())?,
-        })
-    }
-}
-
-/// Implementação de metodos básicos de uma struct
 impl Cache {
-    pub fn new(nsets: usize, bsize: usize, assoc: usize) -> Self {
+    pub fn new(config: CacheConfig) -> Self {
         Self {
-            nsets,
-            bsize,
-            assoc,
+            config,
+            // vec![x; n] => um vetor com n elementos x. Ex: vec![0; 5] => [0, 0, 0, 0, 0]
+            sets: vec![vec![CacheLine::default(); config.assoc]; config.nsets],
         }
     }
 
-    pub fn nsets(&self) -> usize {
-        self.nsets
+    pub fn is_cached(&self, addr: Address) -> bool {
+        let dec_addr = self.decode_address(addr);
+        let set = &self.sets[dec_addr.indice as usize];
+
+        set.iter().any(|l| l.valid && l.tag == dec_addr.tag)
     }
 
-    pub fn bsize(&self) -> usize {
-        self.bsize
+    pub fn insert(&mut self, addr: Address) {
+        if self.is_cached(addr) {
+            return;
+        }
+
+        let dec_addr = self.decode_address(addr);
+
+        let mut rng = rand::rng();
+        let i: usize = rng.random_range(0..self.config.assoc);
+
+        self.sets[dec_addr.indice as usize][i].tag = dec_addr.tag;
+        self.sets[dec_addr.indice as usize][i].valid = true;
     }
 
-    pub fn assoc(&self) -> usize {
-        self.assoc
+    pub fn decode_address(&self, addr: Address) -> DecodedAddress {
+        let dec = addr.addr;
+        let offset = dec & (2u32.pow(self.config.n_bits_offset) - 1);
+        let indice = dec >> self.config.n_bits_offset & (2u32.pow(self.config.n_bits_indice) - 1);
+        let tag = dec >> (self.config.n_bits_offset + self.config.n_bits_indice);
+
+        DecodedAddress::new(offset, indice, tag)
     }
 }
