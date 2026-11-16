@@ -36,7 +36,6 @@ impl Address {
 }
 
 fn get_addr_kinda(addr: u32) -> AddrKind {
-    // confirmar se o professor queria dizer MegaBytes ou MibiBytes
     // 2^29 = 512MiB
     if addr < 2u32.pow(29) {
         AddrKind::Data
