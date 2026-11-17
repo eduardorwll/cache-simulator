@@ -11,9 +11,21 @@ use std::path::PathBuf;
     override_usage = "cache-simulator <CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2] <ARQUIVO>"
 )]
 #[command(after_help = "\
+Configuração de cache:
+  <nsets>:<bsize>:<assoc>[:<repl>]
+  - nsets: número de conjuntos (potência de 2, ex: 1024, ou 1 para totalmente associativa)
+  - bsize: tamanho do bloco em bytes (potência de 2, ex: 16, 32)
+  - assoc: associatividade / vias por conjunto (ex: 1, 2, 4, 16)
+  - repl: política de substituição (opcional, padrão: l)
+      l: LRU (Least Recently Used)
+      f: FIFO (First In First Out)
+      r: RANDOM
+
 Exemplos:
   cache-simulator 256:16:4 256:16:4 benchmark.bin
-  cache-simulator 256:16:4 256:16:4 4096:32:8 benchmark.bin")]
+  cache-simulator 1:32:16:l 1:32:16:l benchmark.bin
+  cache-simulator 1:32:16:f 1:32:16:f benchmark.bin
+  cache-simulator 256:16:4:l 256:16:4:l 4096:32:8:l benchmark.bin")]
 pub struct Cli {
     #[arg(value_name = "ARGS", num_args = 1..=4)]
     args: Vec<String>,
@@ -23,7 +35,7 @@ impl Cli {
     /// Apesar do nome ser autoexplicativo, essa função toma para si a struct CLI (note o self e não
     /// &self) e retorna uma configuração do simulador de cache
     pub fn into_config(self) -> Result<SimConfig, String> {
-        // Separa as configurações de cache do caminho pro arquivos
+        // Separa as configurações de cache do caminho pro arquivo
         // o caminho para o arquivo deve ser o ultimo argumento passado, por isso o split_last
         let (file, settings) = self.args.split_last().unwrap();
         let file = PathBuf::from(file);
@@ -35,8 +47,7 @@ impl Cli {
             ));
         }
 
-        // Cria um vetor de `Cache` apartir da entrada de args do usuario
-        // s.parse::<CacheConfig> vai chamar o metodo from_str que é implementado pelo `Cache`
+        // cria um vetor de CacheConfig a partir da entrada de args do usuário
         let configs = settings
             .iter()
             .map(|s| s.parse::<CacheConfig>())
@@ -59,7 +70,7 @@ impl Cli {
             ),
             _ => {
                 return Err(
-                    "Configuração invalida, use --help para obter mais informações".to_string(),
+                    "Configuração inválida. Esperado 2 ou 3 configurações de cache antes do arquivo de benchmark. Use --help para obter mais informações".to_string(),
                 );
             }
         };

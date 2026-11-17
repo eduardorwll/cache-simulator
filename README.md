@@ -44,15 +44,18 @@ cargo run -- <CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2] <ARQUIVO>
 
 ### Configuração de cache
 
-Cada cache é configurada no formato `<nsets>:<bsize>:<assoc>`:
+Cada cache é configurada no formato `<nsets>:<bsize>:<assoc>[:<repl>]`:
 
-| Campo | Significado                         | Exemplo |
-| ----- | ----------------------------------- | ------- |
-| nsets | número de conjuntos                 | 1024    |
-| bsize | tamanho do bloco, em bytes          | 16      |
-| assoc | associatividade (vias por conjunto) | 4       |
+| Campo | Significado                                      | Exemplo |
+| ----- | ------------------------------------------------ | ------- |
+| nsets | número de conjuntos                              | 1024    |
+| bsize | tamanho do bloco, em bytes                       | 16      |
+| assoc | associatividade (vias por conjunto)              | 4       |
+| repl  | política de substituição (opcional, padrão: `l`) | `l`     |
 
-Ou seja, `1024:16:4` = 1024 conjuntos, blocos de 16 bytes, 4 vias.
+Políticas aceitas em `repl`: `l` (LRU), `f` (FIFO) e `r` (RANDOM).
+
+Ou seja, `1024:16:4` = 1024 conjuntos, blocos de 16 bytes, 4 vias (LRU por padrão).
 
 ## Exemplos
 

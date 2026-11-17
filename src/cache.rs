@@ -1,23 +1,92 @@
 use crate::address::{Address, DecodedAddress};
 
-use self::{cache_config::CacheConfig, cache_line::CacheLine};
+use self::{
+    cache_config::{CacheConfig, ReplacementPolicy},
+    cache_line::CacheLine,
+};
 use rand::RngExt;
 
 pub mod cache_config;
-mod cache_line;
+pub mod cache_line;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum AccessOutcome {
+    Hit,
+    Miss { replaced: bool },
+}
 
 pub struct Cache {
     pub config: CacheConfig,
     pub sets: Vec<Vec<CacheLine>>,
+    pub current_time: u64,
 }
 
 impl Cache {
     pub fn new(config: CacheConfig) -> Self {
         Self {
             config,
-            // vec![x; n] => um vetor com n elementos x. Ex: vec![0; 5] => [0, 0, 0, 0, 0]
             sets: vec![vec![CacheLine::default(); config.assoc]; config.nsets],
+            current_time: 0,
         }
+    }
+
+    /// Processa um acesso à cache, verificando se houve Hit ou Miss.
+    /// Em caso de Miss, insere o bloco na cache aplicando a política de substituição
+    /// configurada (LRU, FIFO ou RANDOM).
+    pub fn access(&mut self, addr: Address) -> AccessOutcome {
+        self.current_time = self.current_time.saturating_add(1);
+        let now = self.current_time;
+
+        let dec_addr = self.decode_address(addr);
+        let set_idx = dec_addr.indice as usize;
+        let set = &mut self.sets[set_idx];
+
+        // 1. Verifica se já está em cache (Hit)
+        if let Some(line) = set.iter_mut().find(|l| l.valid && l.tag == dec_addr.tag) {
+            line.last_access = now;
+            return AccessOutcome::Hit;
+        }
+
+        // 2. Se for Miss, procura uma linha vazia (inválida)
+        if let Some(empty_line) = set.iter_mut().find(|l| !l.valid) {
+            empty_line.valid = true;
+            empty_line.tag = dec_addr.tag;
+            empty_line.last_access = now;
+            empty_line.insert_time = now;
+            return AccessOutcome::Miss { replaced: false };
+        }
+
+        // 3. Se todas as vias estão ocupadas, aplica a política de substituição
+        let victim_idx = match self.config.policy {
+            ReplacementPolicy::Lru => {
+                // Linha com o menor last_access
+                set.iter()
+                    .enumerate()
+                    .min_by_key(|(_, line)| line.last_access)
+                    .map(|(idx, _)| idx)
+                    .unwrap_or(0)
+            }
+            ReplacementPolicy::Fifo => {
+                // Linha com o menor insert_time
+                set.iter()
+                    .enumerate()
+                    .min_by_key(|(_, line)| line.insert_time)
+                    .map(|(idx, _)| idx)
+                    .unwrap_or(0)
+            }
+            ReplacementPolicy::Random => {
+                let mut rng = rand::rng();
+                rng.random_range(0..self.config.assoc)
+            }
+        };
+
+        let victim = &mut set[victim_idx];
+        victim.tag = dec_addr.tag;
+        victim.valid = true;
+        victim.last_access = now;
+        victim.insert_time = now;
+
+        AccessOutcome::Miss { replaced: true }
     }
 
     pub fn is_cached(&self, addr: Address) -> bool {
@@ -28,25 +97,31 @@ impl Cache {
     }
 
     pub fn insert(&mut self, addr: Address) {
-        if self.is_cached(addr) {
-            return;
-        }
-
-        let dec_addr = self.decode_address(addr);
-
-        let mut rng = rand::rng();
-        let i: usize = rng.random_range(0..self.config.assoc);
-
-        self.sets[dec_addr.indice as usize][i].tag = dec_addr.tag;
-        self.sets[dec_addr.indice as usize][i].valid = true;
+        self.access(addr);
     }
 
     pub fn decode_address(&self, addr: Address) -> DecodedAddress {
         let dec = addr.addr;
-        let offset = dec & (2u32.pow(self.config.n_bits_offset) - 1);
-        let indice = dec >> self.config.n_bits_offset & (2u32.pow(self.config.n_bits_indice) - 1);
-        let tag = dec >> (self.config.n_bits_offset + self.config.n_bits_indice);
+
+        let offset = if self.config.n_bits_offset == 0 {
+            0
+        } else {
+            dec & ((1u32 << self.config.n_bits_offset) - 1)
+        };
+
+        let indice = if self.config.n_bits_indice == 0 {
+            0
+        } else {
+            (dec >> self.config.n_bits_offset) & ((1u32 << self.config.n_bits_indice) - 1)
+        };
+
+        let tag = if self.config.n_bits_offset + self.config.n_bits_indice >= 32 {
+            0
+        } else {
+            dec >> (self.config.n_bits_offset + self.config.n_bits_indice)
+        };
 
         DecodedAddress::new(offset, indice, tag)
     }
 }
+
