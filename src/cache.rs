@@ -3,11 +3,13 @@ use crate::address::{Address, DecodedAddress};
 use self::{
     cache_config::{CacheConfig, ReplacementPolicy},
     cache_line::CacheLine,
+    stats::CacheStats,
 };
 use rand::RngExt;
 
 pub mod cache_config;
 pub mod cache_line;
+pub mod stats;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum AccessOutcome {
@@ -19,6 +21,7 @@ pub struct Cache {
     pub config: CacheConfig,
     pub sets: Vec<Vec<CacheLine>>,
     pub current_time: u64,
+    pub stats: CacheStats,
 }
 
 impl Cache {
@@ -27,12 +30,12 @@ impl Cache {
             config,
             sets: vec![vec![CacheLine::default(); config.assoc]; config.nsets],
             current_time: 0,
+            stats: CacheStats::default(),
         }
     }
 
-    /// Processa um acesso à cache, verificando se houve Hit ou Miss.
-    /// Em caso de Miss, insere o bloco na cache aplicando a política de substituição
-    /// configurada (LRU, FIFO ou RANDOM).
+    /// Processa um acesso à cache, atualizando os contadores estatísticos
+    /// e a linha de cache correspondente conforme a política configurada.
     pub fn access(&mut self, addr: Address) -> AccessOutcome {
         self.current_time = self.current_time.saturating_add(1);
         let now = self.current_time;
@@ -44,6 +47,7 @@ impl Cache {
         // 1. Verifica se já está em cache (Hit)
         if let Some(line) = set.iter_mut().find(|l| l.valid && l.tag == dec_addr.tag) {
             line.last_access = now;
+            self.stats.record_hit();
             return AccessOutcome::Hit;
         }
 
@@ -53,6 +57,7 @@ impl Cache {
             empty_line.tag = dec_addr.tag;
             empty_line.last_access = now;
             empty_line.insert_time = now;
+            self.stats.record_miss(false);
             return AccessOutcome::Miss { replaced: false };
         }
 
@@ -86,6 +91,7 @@ impl Cache {
         victim.last_access = now;
         victim.insert_time = now;
 
+        self.stats.record_miss(true);
         AccessOutcome::Miss { replaced: true }
     }
 
