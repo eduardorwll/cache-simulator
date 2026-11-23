@@ -69,12 +69,14 @@ impl SimConfig {
         );
         println!("  Misses:                          {}", cache.stats.misses);
         println!(
-            "    - Compulsórios:                {}",
-            cache.stats.compulsory_misses
+            "    - Compulsórios:                {} ({:.2}% dos misses)",
+            cache.stats.compulsory_misses,
+            cache.stats.compulsory_miss_ratio()
         );
         println!(
-            "    - Capacidade + Conflito:       {}",
-            cache.stats.capacity_conflict_misses
+            "    - Capacidade + Conflito:       {} ({:.2}% dos misses)",
+            cache.stats.capacity_conflict_misses,
+            cache.stats.capacity_conflict_miss_ratio()
         );
         println!(
             "  Taxa de Miss (Miss Ratio):       {:.2}%",

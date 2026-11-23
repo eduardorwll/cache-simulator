@@ -57,6 +57,24 @@ impl CacheStats {
         }
     }
 
+    /// percentual de misses compulsórios em relação ao total de misses
+    pub fn compulsory_miss_ratio(&self) -> f64 {
+        if self.misses == 0 {
+            0.0
+        } else {
+            (self.compulsory_misses as f64 / self.misses as f64) * 100.0
+        }
+    }
+
+    /// percentual de misses de capacidade + conflito em relação ao total de misses
+    pub fn capacity_conflict_miss_ratio(&self) -> f64 {
+        if self.misses == 0 {
+            0.0
+        } else {
+            (self.capacity_conflict_misses as f64 / self.misses as f64) * 100.0
+        }
+    }
+
     /// reinicia todos os contadores para zero
     pub fn reset(&mut self) {
         *self = Self::default();
