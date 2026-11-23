@@ -47,6 +47,13 @@ impl Cli {
             ));
         }
 
+        if !file.is_file() {
+            return Err(format!(
+                "O caminho {} não é um arquivo válido",
+                file.display()
+            ));
+        }
+
         // cria um vetor de CacheConfig a partir da entrada de args do usuário
         let configs = settings
             .iter()
