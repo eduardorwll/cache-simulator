@@ -31,8 +31,39 @@ impl SimConfig {
         }
     }
 
-    /// Exibe um relatório consolidado de todas as caches simuladas,
-    /// no padrão adotado nos relatórios de experimentos da disciplina AOC II.
+    fn print_cache_section(title: &str, access_label: &str, cache: &Cache) {
+        println!("[{title}]");
+        println!(
+            "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
+            cache.config.nsets, cache.config.bsize, cache.config.assoc, cache.config.policy
+        );
+        println!("  {access_label:<32} {}", cache.stats.accesses);
+        println!("  Hits:                            {}", cache.stats.hits);
+        println!(
+            "  Taxa de Hit (Hit Ratio):         {:.2}%",
+            cache.stats.hit_rate()
+        );
+        println!("  Misses:                          {}", cache.stats.misses);
+        println!(
+            "    - Compulsórios:                {}",
+            cache.stats.compulsory_misses
+        );
+        println!(
+            "    - Capacidade + Conflito:       {}",
+            cache.stats.capacity_conflict_misses
+        );
+        println!(
+            "  Taxa de Miss (Miss Ratio):       {:.2}%",
+            cache.stats.miss_rate()
+        );
+        println!(
+            "  Substituições (Replacements):    {}",
+            cache.stats.replacements
+        );
+        println!("------------------------------------------------------------");
+    }
+
+    /// Exibe um relatório consolidado de todas as caches simuladas.
     pub fn print_report(&self) {
         println!("============================================================");
         println!("               RELATÓRIO DO SIMULADOR DE CACHE              ");
@@ -40,117 +71,15 @@ impl SimConfig {
         println!("Arquivo analisado: {}", self.file.display());
         println!("------------------------------------------------------------");
 
-        // IL1
-        println!("[Cache L1 - Instruções]");
-        println!(
-            "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
-            self.il1.config.nsets,
-            self.il1.config.bsize,
-            self.il1.config.assoc,
-            self.il1.config.policy
+        Self::print_cache_section(
+            "Cache L1 - Instruções",
+            "Instruções executadas (Acessos):",
+            &self.il1,
         );
-        println!(
-            "  Instruções executadas (Acessos): {}",
-            self.il1.stats.accesses
-        );
-        println!("  Hits:                            {}", self.il1.stats.hits);
-        println!(
-            "  Taxa de Hit (Hit Ratio):         {:.2}%",
-            self.il1.stats.hit_rate()
-        );
-        println!(
-            "  Misses:                          {}",
-            self.il1.stats.misses
-        );
-        println!(
-            "    - Compulsórios:                {}",
-            self.il1.stats.compulsory_misses
-        );
-        println!(
-            "    - Capacidade + Conflito:       {}",
-            self.il1.stats.capacity_conflict_misses
-        );
-        println!(
-            "  Taxa de Miss (Miss Ratio):       {:.2}%",
-            self.il1.stats.miss_rate()
-        );
-        println!(
-            "  Substituições (Replacements):    {}",
-            self.il1.stats.replacements
-        );
-        println!("------------------------------------------------------------");
+        Self::print_cache_section("Cache L1 - Dados", "Instruções L/S (Acessos):", &self.dl1);
 
-        // DL1
-        println!("[Cache L1 - Dados]");
-        println!(
-            "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
-            self.dl1.config.nsets,
-            self.dl1.config.bsize,
-            self.dl1.config.assoc,
-            self.dl1.config.policy
-        );
-        println!(
-            "  Instruções L/S (Acessos):        {}",
-            self.dl1.stats.accesses
-        );
-        println!("  Hits:                            {}", self.dl1.stats.hits);
-        println!(
-            "  Taxa de Hit (Hit Ratio):         {:.2}%",
-            self.dl1.stats.hit_rate()
-        );
-        println!(
-            "  Misses:                          {}",
-            self.dl1.stats.misses
-        );
-        println!(
-            "    - Compulsórios:                {}",
-            self.dl1.stats.compulsory_misses
-        );
-        println!(
-            "    - Capacidade + Conflito:       {}",
-            self.dl1.stats.capacity_conflict_misses
-        );
-        println!(
-            "  Taxa de Miss (Miss Ratio):       {:.2}%",
-            self.dl1.stats.miss_rate()
-        );
-        println!(
-            "  Substituições (Replacements):    {}",
-            self.dl1.stats.replacements
-        );
-        println!("------------------------------------------------------------");
-
-        // L2 (se presente)
         if let Some(l2) = &self.l2 {
-            println!("[Cache L2 - Unificada]");
-            println!(
-                "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
-                l2.config.nsets, l2.config.bsize, l2.config.assoc, l2.config.policy
-            );
-            println!("  Acessos:                         {}", l2.stats.accesses);
-            println!("  Hits:                            {}", l2.stats.hits);
-            println!(
-                "  Taxa de Hit (Hit Ratio):         {:.2}%",
-                l2.stats.hit_rate()
-            );
-            println!("  Misses:                          {}", l2.stats.misses);
-            println!(
-                "    - Compulsórios:                {}",
-                l2.stats.compulsory_misses
-            );
-            println!(
-                "    - Capacidade + Conflito:       {}",
-                l2.stats.capacity_conflict_misses
-            );
-            println!(
-                "  Taxa de Miss (Miss Ratio):       {:.2}%",
-                l2.stats.miss_rate()
-            );
-            println!(
-                "  Substituições (Replacements):    {}",
-                l2.stats.replacements
-            );
-            println!("------------------------------------------------------------");
+            Self::print_cache_section("Cache L2 - Unificada", "Acessos:", l2);
         }
 
         let total_accesses = self.il1.stats.accesses + self.dl1.stats.accesses;
