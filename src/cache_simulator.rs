@@ -109,20 +109,31 @@ impl SimConfig {
         }
 
         let total_accesses = self.il1.stats.accesses + self.dl1.stats.accesses;
-        let total_misses = self.il1.stats.misses + self.dl1.stats.misses;
-        let global_miss_rate = if total_accesses > 0 {
-            (total_misses as f64 / total_accesses as f64) * 100.0
+        let total_misses_l1 = self.il1.stats.misses + self.dl1.stats.misses;
+        let l1_global_miss_rate = if total_accesses > 0 {
+            (total_misses_l1 as f64 / total_accesses as f64) * 100.0
         } else {
             0.0
         };
 
-        println!("[Estatísticas Globais L1]");
-        println!("  Total de Acessos L1:             {}", total_accesses);
-        println!("  Total de Misses L1:              {}", total_misses);
-        println!(
-            "  Taxa Global de Miss L1:          {:.2}%",
-            global_miss_rate
-        );
+        println!("[Estatísticas Globais]");
+        println!("  Total de Acessos (L1):           {total_accesses}");
+        println!("  Total de Misses L1:              {total_misses_l1}");
+        println!("  Taxa Global de Miss L1:          {l1_global_miss_rate:.2}%");
+
+        if let Some(l2) = &self.l2 {
+            let mem_accesses = l2.stats.misses;
+            let hierarchy_miss_rate = if total_accesses > 0 {
+                (mem_accesses as f64 / total_accesses as f64) * 100.0
+            } else {
+                0.0
+            };
+            println!("  Acessos à Memória Principal:     {mem_accesses}");
+            println!("  Taxa Global de Miss (L1+L2):     {hierarchy_miss_rate:.2}%");
+        } else {
+            println!("  Acessos à Memória Principal:     {total_misses_l1}");
+        }
+
         println!("============================================================");
     }
 }
