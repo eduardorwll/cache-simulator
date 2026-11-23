@@ -135,4 +135,8 @@ impl CacheConfig {
             n_bits_tag,
         })
     }
+
+    pub fn total_size_bytes(&self) -> usize {
+        self.nsets * self.bsize * self.assoc
+    }
 }

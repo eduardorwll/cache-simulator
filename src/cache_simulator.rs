@@ -31,11 +31,35 @@ impl SimConfig {
         }
     }
 
+    fn format_size(bytes: usize) -> String {
+        const UNITS: [(usize, &str); 3] = [
+            (1024 * 1024 * 1024, "GiB"),
+            (1024 * 1024, "MiB"),
+            (1024, "KiB"),
+        ];
+
+        for (unit_size, label) in UNITS {
+            if bytes >= unit_size {
+                return if bytes.is_multiple_of(unit_size) {
+                    format!("{} {label} ({bytes} B)", bytes / unit_size)
+                } else {
+                    format!("{:.2} {label} ({bytes} B)", bytes as f64 / unit_size as f64)
+                };
+            }
+        }
+
+        format!("{bytes} B")
+    }
+
     fn print_cache_section(title: &str, access_label: &str, cache: &Cache) {
         println!("[{title}]");
         println!(
             "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
             cache.config.nsets, cache.config.bsize, cache.config.assoc, cache.config.policy
+        );
+        println!(
+            "  Tamanho total:                   {}",
+            Self::format_size(cache.config.total_size_bytes())
         );
         println!("  {access_label:<32} {}", cache.stats.accesses);
         println!("  Hits:                            {}", cache.stats.hits);
