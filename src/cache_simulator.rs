@@ -33,11 +33,23 @@ impl SimConfig {
             self.il1.config.assoc,
             self.il1.config.policy
         );
-        println!("  Instruções executadas (Acessos): {}", self.il1.stats.accesses);
+        println!(
+            "  Instruções executadas (Acessos): {}",
+            self.il1.stats.accesses
+        );
         println!("  Hits:                            {}", self.il1.stats.hits);
-        println!("  Misses:                          {}", self.il1.stats.misses);
-        println!("  Taxa de Miss:                    {:.2}%", self.il1.stats.miss_rate());
-        println!("  Substituições (Replacements):    {}", self.il1.stats.replacements);
+        println!(
+            "  Misses:                          {}",
+            self.il1.stats.misses
+        );
+        println!(
+            "  Taxa de Miss:                    {:.2}%",
+            self.il1.stats.miss_rate()
+        );
+        println!(
+            "  Substituições (Replacements):    {}",
+            self.il1.stats.replacements
+        );
         println!("------------------------------------------------------------");
 
         // DL1
@@ -49,11 +61,23 @@ impl SimConfig {
             self.dl1.config.assoc,
             self.dl1.config.policy
         );
-        println!("  Instruções L/S (Acessos):        {}", self.dl1.stats.accesses);
+        println!(
+            "  Instruções L/S (Acessos):        {}",
+            self.dl1.stats.accesses
+        );
         println!("  Hits:                            {}", self.dl1.stats.hits);
-        println!("  Misses:                          {}", self.dl1.stats.misses);
-        println!("  Taxa de Miss:                    {:.2}%", self.dl1.stats.miss_rate());
-        println!("  Substituições (Replacements):    {}", self.dl1.stats.replacements);
+        println!(
+            "  Misses:                          {}",
+            self.dl1.stats.misses
+        );
+        println!(
+            "  Taxa de Miss:                    {:.2}%",
+            self.dl1.stats.miss_rate()
+        );
+        println!(
+            "  Substituições (Replacements):    {}",
+            self.dl1.stats.replacements
+        );
         println!("------------------------------------------------------------");
 
         // L2 (se presente)
@@ -61,16 +85,19 @@ impl SimConfig {
             println!("[Cache L2 - Unificada]");
             println!(
                 "  Configuração: {} conjuntos, {} B/bloco, {}-way, política {}",
-                l2.config.nsets,
-                l2.config.bsize,
-                l2.config.assoc,
-                l2.config.policy
+                l2.config.nsets, l2.config.bsize, l2.config.assoc, l2.config.policy
             );
             println!("  Acessos:                         {}", l2.stats.accesses);
             println!("  Hits:                            {}", l2.stats.hits);
             println!("  Misses:                          {}", l2.stats.misses);
-            println!("  Taxa de Miss:                    {:.2}%", l2.stats.miss_rate());
-            println!("  Substituições (Replacements):    {}", l2.stats.replacements);
+            println!(
+                "  Taxa de Miss:                    {:.2}%",
+                l2.stats.miss_rate()
+            );
+            println!(
+                "  Substituições (Replacements):    {}",
+                l2.stats.replacements
+            );
             println!("------------------------------------------------------------");
         }
 
@@ -85,7 +112,10 @@ impl SimConfig {
         println!("[Estatísticas Globais L1]");
         println!("  Total de Acessos L1:             {}", total_accesses);
         println!("  Total de Misses L1:              {}", total_misses);
-        println!("  Taxa Global de Miss L1:          {:.2}%", global_miss_rate);
+        println!(
+            "  Taxa Global de Miss L1:          {:.2}%",
+            global_miss_rate
+        );
         println!("============================================================");
     }
 }

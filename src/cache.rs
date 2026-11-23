@@ -130,4 +130,3 @@ impl Cache {
         DecodedAddress::new(offset, indice, tag)
     }
 }
-

@@ -21,7 +21,7 @@ impl CacheStats {
         self.hits = self.hits.saturating_add(1);
     }
 
-    /// registra um miss 
+    /// registra um miss
     /// replaced indica se houve substituição de uma linha que antes era valida
     pub fn record_miss(&mut self, replaced: bool) {
         self.accesses = self.accesses.saturating_add(1);
@@ -69,7 +69,3 @@ impl fmt::Display for CacheStats {
         )
     }
 }
-
-
-
-
