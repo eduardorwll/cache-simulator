@@ -2,9 +2,9 @@ use std::str::FromStr;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Default)]
 pub enum ReplacementPolicy {
-    #[default]
     Lru,
     Fifo,
+    #[default]
     Random,
 }
 

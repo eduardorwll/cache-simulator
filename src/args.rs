@@ -64,10 +64,15 @@ impl Cli {
         let (il1, dl1, l2) = match configs.len() {
             // retorna a configuração padrão caso nenhuma seja passada pelo usuario
             0 => {
-                let default_il1 = CacheConfig::new(256, 16, 4);
-                let default_dl1 = CacheConfig::new(256, 16, 4);
+                let default_il1 = CacheConfig::new(64, 4, 1);
+                let default_dl1 = CacheConfig::new(64, 4, 1);
+                let default_l2 = CacheConfig::new(64, 4, 1);
 
-                (Cache::new(default_il1), Cache::new(default_dl1), None)
+                (
+                    Cache::new(default_il1),
+                    Cache::new(default_dl1),
+                    Some(Cache::new(default_l2)),
+                )
             }
             2 => (Cache::new(configs[0]), Cache::new(configs[1]), None),
             3 => (
