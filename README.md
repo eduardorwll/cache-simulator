@@ -25,7 +25,7 @@ O Cargo tem dois modos de compilação:
   cargo build --release
   ```
 
-Os binários ficam em `target/debug/cache-simulator` e `target/release/cache-simulator`,
+Os binários ficam em `target/debug/cache_simulator` e `target/release/cache_simulator`,
 respectivamente.
 
 ## Uso
@@ -34,11 +34,12 @@ A forma mais prática de rodar é com o `cargo run` (lembrando do `--` para sepa
 argumentos do programa dos argumentos do próprio cargo):
 
 ```bash
-cargo run -- <CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2] <ARQUIVO>
+cargo run -- [<CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2]] <ARQUIVO>
 ```
 
 - O **último argumento** é sempre o caminho para o arquivo de entrada (benchmark).
 - Os argumentos anteriores são as configurações das caches:
+  - **0 configs (padrão)**: iL1, dL1 e L2 com 64 conjuntos, blocos de 4 bytes e mapeamento direto (`64:4:1`);
   - **2 configs**: L1 de instruções + L1 de dados, sem L2;
   - **3 configs**: as duas L1s + L2 unificada.
 
@@ -51,15 +52,18 @@ Cada cache é configurada no formato `<nsets>:<bsize>:<assoc>[:<repl>]`:
 | nsets | número de conjuntos                              | 1024    |
 | bsize | tamanho do bloco, em bytes                       | 16      |
 | assoc | associatividade (vias por conjunto)              | 4       |
-| repl  | política de substituição (opcional, padrão: `l`) | `l`     |
+| repl  | política de substituição (opcional, padrão: `r`) | `r`     |
 
 Políticas aceitas em `repl`: `l` (LRU), `f` (FIFO) e `r` (RANDOM).
 
-Ou seja, `1024:16:4` = 1024 conjuntos, blocos de 16 bytes, 4 vias (LRU por padrão).
+Ou seja, `1024:16:4` = 1024 conjuntos, blocos de 16 bytes, 4 vias (RANDOM por padrão).
 
 ## Exemplos
 
 ```bash
+# Configuração padrão (iL1, dL1 e L2 com 64:4:1)
+cargo run -- benchmark.bin
+
 # Apenas L1 (instruções + dados), sem L2
 cargo run -- 256:16:4 256:16:4 benchmark.bin
 

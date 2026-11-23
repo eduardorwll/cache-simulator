@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use crate::cache::Cache;
+use crate::{
+    address::{AddrKind, Address},
+    cache::{AccessOutcome, Cache},
+};
 
 /// Struct de gerenciamento do simulador de cache
 pub struct SimConfig {
@@ -13,6 +16,19 @@ pub struct SimConfig {
 impl SimConfig {
     pub fn new(dl1: Cache, il1: Cache, l2: Option<Cache>, file: PathBuf) -> Self {
         Self { dl1, il1, l2, file }
+    }
+
+    pub fn access(&mut self, addr: Address) {
+        let l1_outcome = match addr.kind {
+            AddrKind::Instruction => self.il1.access(addr),
+            AddrKind::Data => self.dl1.access(addr),
+        };
+
+        if let AccessOutcome::Miss { .. } = l1_outcome {
+            if let Some(l2) = &mut self.l2 {
+                l2.access(addr);
+            }
+        }
     }
 
     /// Exibe um relatório consolidado de todas as caches simuladas,

@@ -8,7 +8,7 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(version, about)]
 #[command(
-    override_usage = "cache-simulator <CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2] <ARQUIVO>"
+    override_usage = "cache_simulator [<CONFIG_L1_INSTRUÇÕES> <CONFIG_L1_DADOS> [CONFIG_L2]] <ARQUIVO>"
 )]
 #[command(after_help = "\
 Configuração de cache:
@@ -16,16 +16,20 @@ Configuração de cache:
   - nsets: número de conjuntos (potência de 2, ex: 1024, ou 1 para totalmente associativa)
   - bsize: tamanho do bloco em bytes (potência de 2, ex: 16, 32)
   - assoc: associatividade / vias por conjunto (ex: 1, 2, 4, 16)
-  - repl: política de substituição (opcional, padrão: l)
+  - repl: política de substituição (opcional, padrão: r)
       l: LRU (Least Recently Used)
       f: FIFO (First In First Out)
       r: RANDOM
 
+  Se nenhuma configuração de cache for informada, usa-se a configuração padrão
+  (64 conjuntos, blocos de 4 bytes, mapeamento direto) para iL1, dL1 e L2.
+
 Exemplos:
-  cache-simulator 256:16:4 256:16:4 benchmark.bin
-  cache-simulator 1:32:16:l 1:32:16:l benchmark.bin
-  cache-simulator 1:32:16:f 1:32:16:f benchmark.bin
-  cache-simulator 256:16:4:l 256:16:4:l 4096:32:8:l benchmark.bin")]
+  cache_simulator benchmark.bin
+  cache_simulator 256:16:4 256:16:4 benchmark.bin
+  cache_simulator 1:32:16:l 1:32:16:l benchmark.bin
+  cache_simulator 1:32:16:f 1:32:16:f benchmark.bin
+  cache_simulator 256:16:4:r 256:16:4:r 4096:32:8:r benchmark.bin")]
 pub struct Cli {
     #[arg(value_name = "ARGS", num_args = 1..=4)]
     args: Vec<String>,
@@ -82,7 +86,7 @@ impl Cli {
             ),
             _ => {
                 return Err(
-                    "Configuração inválida. Esperado 2 ou 3 configurações de cache antes do arquivo de benchmark. Use --help para obter mais informações".to_string(),
+                    "Configuração inválida. Esperado 0 (padrão), 2 (iL1 e dL1) ou 3 (iL1, dL1 e L2) configurações de cache antes do arquivo de benchmark. Use --help para obter mais informações".to_string(),
                 );
             }
         };

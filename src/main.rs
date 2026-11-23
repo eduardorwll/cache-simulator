@@ -26,7 +26,7 @@ fn read_next_addr(reader: &mut BufReader<File>) -> io::Result<Option<u32>> {
 }
 
 fn main() -> ExitCode {
-    let simulator_config = match Cli::parse().into_config() {
+    let mut simulator_config = match Cli::parse().into_config() {
         Ok(config) => config,
         Err(e) => {
             eprintln!("erro: {e}");
@@ -60,9 +60,11 @@ fn main() -> ExitCode {
             }
         };
 
-        let _address = Address::new(addr);
-        todo!("processar acesso às caches com `_address`")
+        let address = Address::new(addr);
+        simulator_config.access(address);
     }
+
+    simulator_config.print_report();
 
     ExitCode::SUCCESS
 }
