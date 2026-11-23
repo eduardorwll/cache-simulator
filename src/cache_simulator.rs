@@ -39,11 +39,23 @@ impl SimConfig {
         );
         println!("  Hits:                            {}", self.il1.stats.hits);
         println!(
+            "  Taxa de Hit (Hit Ratio):         {:.2}%",
+            self.il1.stats.hit_rate()
+        );
+        println!(
             "  Misses:                          {}",
             self.il1.stats.misses
         );
         println!(
-            "  Taxa de Miss:                    {:.2}%",
+            "    - Compulsórios:                {}",
+            self.il1.stats.compulsory_misses
+        );
+        println!(
+            "    - Capacidade + Conflito:       {}",
+            self.il1.stats.capacity_conflict_misses
+        );
+        println!(
+            "  Taxa de Miss (Miss Ratio):       {:.2}%",
             self.il1.stats.miss_rate()
         );
         println!(
@@ -67,11 +79,23 @@ impl SimConfig {
         );
         println!("  Hits:                            {}", self.dl1.stats.hits);
         println!(
+            "  Taxa de Hit (Hit Ratio):         {:.2}%",
+            self.dl1.stats.hit_rate()
+        );
+        println!(
             "  Misses:                          {}",
             self.dl1.stats.misses
         );
         println!(
-            "  Taxa de Miss:                    {:.2}%",
+            "    - Compulsórios:                {}",
+            self.dl1.stats.compulsory_misses
+        );
+        println!(
+            "    - Capacidade + Conflito:       {}",
+            self.dl1.stats.capacity_conflict_misses
+        );
+        println!(
+            "  Taxa de Miss (Miss Ratio):       {:.2}%",
             self.dl1.stats.miss_rate()
         );
         println!(
@@ -89,9 +113,21 @@ impl SimConfig {
             );
             println!("  Acessos:                         {}", l2.stats.accesses);
             println!("  Hits:                            {}", l2.stats.hits);
+            println!(
+                "  Taxa de Hit (Hit Ratio):         {:.2}%",
+                l2.stats.hit_rate()
+            );
             println!("  Misses:                          {}", l2.stats.misses);
             println!(
-                "  Taxa de Miss:                    {:.2}%",
+                "    - Compulsórios:                {}",
+                l2.stats.compulsory_misses
+            );
+            println!(
+                "    - Capacidade + Conflito:       {}",
+                l2.stats.capacity_conflict_misses
+            );
+            println!(
+                "  Taxa de Miss (Miss Ratio):       {:.2}%",
                 l2.stats.miss_rate()
             );
             println!(

@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::address::{Address, DecodedAddress};
 
 use self::{
@@ -22,6 +24,7 @@ pub struct Cache {
     pub sets: Vec<Vec<CacheLine>>,
     pub current_time: u64,
     pub stats: CacheStats,
+    pub seen_blocks: HashSet<u32>,
 }
 
 impl Cache {
@@ -31,6 +34,7 @@ impl Cache {
             sets: vec![vec![CacheLine::default(); config.assoc]; config.nsets],
             current_time: 0,
             stats: CacheStats::default(),
+            seen_blocks: HashSet::new(),
         }
     }
 
@@ -51,13 +55,17 @@ impl Cache {
             return AccessOutcome::Hit;
         }
 
-        // 2. Se for Miss, procura uma linha vazia (inválida)
+        // 2. Se for Miss, classifica (compulsório vs capacidade+conflito)
+        let block_addr = addr.addr >> self.config.n_bits_offset;
+        let compulsory = self.seen_blocks.insert(block_addr);
+
+        // Procura uma linha vazia (inválida)
         if let Some(empty_line) = set.iter_mut().find(|l| !l.valid) {
             empty_line.valid = true;
             empty_line.tag = dec_addr.tag;
             empty_line.last_access = now;
             empty_line.insert_time = now;
-            self.stats.record_miss(false);
+            self.stats.record_miss(false, compulsory);
             return AccessOutcome::Miss { replaced: false };
         }
 
@@ -91,7 +99,7 @@ impl Cache {
         victim.last_access = now;
         victim.insert_time = now;
 
-        self.stats.record_miss(true);
+        self.stats.record_miss(true, compulsory);
         AccessOutcome::Miss { replaced: true }
     }
 

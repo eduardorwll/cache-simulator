@@ -7,6 +7,8 @@ pub struct CacheStats {
     pub accesses: u64,
     pub hits: u64,
     pub misses: u64,
+    pub compulsory_misses: u64,
+    pub capacity_conflict_misses: u64,
     pub replacements: u64,
 }
 
@@ -23,9 +25,15 @@ impl CacheStats {
 
     /// registra um miss
     /// replaced indica se houve substituição de uma linha que antes era valida
-    pub fn record_miss(&mut self, replaced: bool) {
+    /// compulsory indica se o bloco nunca havia sido acessado antes nesta cache
+    pub fn record_miss(&mut self, replaced: bool, compulsory: bool) {
         self.accesses = self.accesses.saturating_add(1);
         self.misses = self.misses.saturating_add(1);
+        if compulsory {
+            self.compulsory_misses = self.compulsory_misses.saturating_add(1);
+        } else {
+            self.capacity_conflict_misses = self.capacity_conflict_misses.saturating_add(1);
+        }
         if replaced {
             self.replacements = self.replacements.saturating_add(1);
         }
