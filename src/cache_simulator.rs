@@ -79,6 +79,16 @@ impl SimConfig {
             cache.stats.capacity_conflict_miss_ratio()
         );
         println!(
+            "        * Capacidade (FA-LRU):     {} ({:.2}% dos misses)",
+            cache.stats.capacity_misses(),
+            cache.stats.capacity_miss_ratio()
+        );
+        println!(
+            "        * Conflito (Hill & Smith): {} ({:.2}% dos misses)",
+            cache.stats.conflict_misses(),
+            cache.stats.conflict_miss_ratio()
+        );
+        println!(
             "  Taxa de Miss (Miss Ratio):       {:.2}%",
             cache.stats.miss_rate()
         );
