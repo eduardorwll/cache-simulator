@@ -11,6 +11,7 @@ use rand::RngExt;
 
 pub mod cache_config;
 pub mod cache_line;
+pub mod fa_lru;
 pub mod stats;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
